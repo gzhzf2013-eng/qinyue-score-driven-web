@@ -1,11 +1,15 @@
 {
   "name": "qinyue-score-driven-web",
-  "version": "0.1.0",
-  "description": "琴乐启蒙 AI 导师 - 乐谱驱动测评网页原型",
+  "version": "1.0.0",
+  "description": "琴乐启蒙AI导师乐谱驱动测试版",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "4.18.2"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }
