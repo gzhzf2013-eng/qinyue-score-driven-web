@@ -1,19 +1,25 @@
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const express = require("express");
+const path = require("path");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/sample', express.static(path.join(__dirname, 'sample')));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-app.get('/health', (req, res) => {
-  res.json({ ok: true, version: '0.1.0-score-driven' });
+// 健康检查，Render 用
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", message: "qinyue score driven web running" });
 });
 
-app.listen(port, () => {
-  console.log(`琴乐启蒙 AI 导师 · 乐谱驱动测试版 running at http://localhost:${port}`);
+// 让根路径显示首页
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// 允许访问静态资源
+app.use(express.static(__dirname));
+
+app.listen(PORT, () => {
+  console.log(`琴乐启蒙 AI 导师服务已启动，端口：${PORT}`);
 });
