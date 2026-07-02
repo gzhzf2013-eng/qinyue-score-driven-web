@@ -1,7 +1,7 @@
 {
   "name": "qinyue-score-driven-web",
   "version": "1.0.0",
-  "description": "琴乐启蒙AI导师乐谱驱动测试版",
+  "description": "琴乐启蒙AI导师乐谱驱动增强版",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
