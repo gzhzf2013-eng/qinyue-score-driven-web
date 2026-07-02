@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>琴乐启蒙 AI 导师 · 乐谱驱动测试版</title>
+  <style>
+    :root {
+      --bg1: #f5f9ff;
+      --bg2: #f7f4ff;
+      --card: rgba(255,255,255,.86);
+      --ink: #172033;
+      --muted: #667085;
+      --line: #e6ebf5;
+      --blue: #4b8dff;
+      --purple: #8b6cff;
+      --green: #20a06b;
+      --orange: #f59e0b;
+      --red: #e5484d;
+      --shadow: 0 18px 45px rgba(38, 76, 160, .12);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at 10% 10%, #e9f2ff 0%, transparent 28%),
+                  radial-gradient(circle at 90% 0%, #eee8ff 0%, transparent 30%),
+                  linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 22px 60px; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+    .hero-main, .panel {
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .hero-main { padding: 30px; position: relative; overflow: hidden; }
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      right: -60px; top: -70px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(75,141,255,.20), rgba(139,108,255,.16));
+    }
+    .tag { display: inline-flex; gap: 8px; align-items: center; padding: 7px 12px; border-radius: 999px; background: #eef4ff; color: #315fc4; font-weight: 650; font-size: 14px; }
+    h1 { margin: 18px 0 10px; font-size: 36px; letter-spacing: -1px; line-height: 1.15; }
+    .lead { color: var(--muted); font-size: 17px; line-height: 1.75; max-width: 760px; }
+    .hero-side { padding: 24px; display: flex; flex-direction: column; justify-content: space-between; }
+    .status { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(32,160,107,.12); }
+    .version { color: var(--muted); font-size: 13px; margin-top: 8px; }
+    .flow { margin-top: 22px; display: grid; gap: 10px; }
+    .flow div { padding: 12px 14px; border: 1px solid var(--line); border-radius: 15px; background: #fff; color: #44506a; font-weight: 620; }
+    .tabs { display: flex; gap: 10px; margin: 18px 0; flex-wrap: wrap; }
+    .tab { border: 0; padding: 12px 18px; border-radius: 999px; cursor: pointer; background: #fff; color: #3d4961; font-weight: 760; box-shadow: 0 8px 24px rgba(35, 80, 150, .08); }
+    .tab.active { color: white; background: linear-gradient(135deg, var(--blue), var(--purple)); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .panel { padding: 22px; }
+    .panel h2 { margin: 0 0 14px; font-size: 22px; }
+    .panel h3 { margin: 18px 0 10px; font-size: 17px; }
+    .small { color: var(--muted); font-size: 14px; line-height: 1.65; }
+    .drop {
+      min-height: 150px;
+      border: 2px dashed #bfd2ff;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(245,249,255,.9), rgba(250,247,255,.9));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+      cursor: pointer;
+      transition: .18s;
+    }
+    .drop:hover, .drop.drag { border-color: var(--blue); transform: translateY(-1px); }
+    .drop .icon { font-size: 34px; margin-bottom: 8px; }
+    input[type="file"] { display:none; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label { display: block; font-weight: 700; font-size: 13px; color: #46536b; margin: 12px 0 6px; }
+    input, select, textarea {
+      width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 12px 13px; font-size: 14px;
+      font-family: inherit; background: #fff; color: var(--ink); outline: none;
+    }
+    textarea { min-height: 88px; resize: vertical; line-height: 1.5; }
+    .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .btn {
+      border: 0; padding: 12px 16px; border-radius: 14px; cursor: pointer; font-weight: 800; color: white;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 10px 24px rgba(75,141,255,.22);
+    }
+    .btn.secondary { background: #fff; color: #31517a; border: 1px solid var(--line); box-shadow: none; }
+    .btn.danger { background: linear-gradient(135deg, #ff6b6b, #e5484d); }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 14px; }
+    .metric { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+    .metric .k { color: var(--muted); font-size: 13px; font-weight: 700; }
+    .metric .v { font-size: 24px; font-weight: 850; margin-top: 5px; }
+    .metric .note { color: var(--muted); font-size: 12px; margin-top: 5px; line-height: 1.4; }
+    .piece-list { display: grid; gap: 10px; margin-top: 12px; }
+    .piece-item {
+      padding: 14px; border-radius: 17px; border: 1px solid var(--line); background: #fff; display:flex; justify-content:space-between; gap: 12px; align-items:center;
+    }
+    .piece-title { font-weight: 850; }
+    .badge { display:inline-block; padding: 5px 10px; border-radius: 999px; background: #eef4ff; color:#315fc4; font-weight: 750; font-size: 12px; margin: 4px 4px 0 0; }
+    .badge.green { background: #e8f7ef; color: #11734d; }
+    .badge.orange { background: #fff4db; color: #936000; }
+    .badge.red { background: #ffecee; color: #b4232b; }
+    .result { margin-top: 16px; padding: 18px; border-radius: 20px; background: #fff; border: 1px solid var(--line); }
+    .result.ok { border-color: rgba(32,160,107,.35); background: #fbfffd; }
+    .result.warn { border-color: rgba(245,158,11,.35); background: #fffdf7; }
+    .result.bad { border-color: rgba(229,72,77,.35); background: #fffafa; }
+    .progress-list { display:grid; gap: 8px; margin: 14px 0; }
+    .step { display:flex; gap: 10px; align-items:center; padding: 11px 12px; background:#fff; border:1px solid var(--line); border-radius: 14px; color:#4b5870; }
+    .step .s { width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#eef4ff;color:#315fc4;font-size:12px;font-weight:900; }
+    .scorebar { background:#eef2f7; border-radius:999px; height:10px; overflow:hidden; margin-top:8px; }
+    .scorebar span { display:block; height:100%; background:linear-gradient(90deg,var(--blue),var(--purple)); border-radius:999px; }
+    .hidden { display: none !important; }
+    .footer { margin-top: 20px; color: var(--muted); font-size: 13px; text-align:center; }
+    code { background:#f3f6fb; padding:2px 6px; border-radius:6px; }
+    @media (max-width: 860px) { .hero, .grid, .row { grid-template-columns: 1fr; } h1 { font-size: 30px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-main">
+        <div class="tag">🎼 乐谱驱动 · 新路线验证</div>
+        <h1>琴乐启蒙 AI 导师<br/>不靠人工标准录音，也能快速添加新曲目</h1>
+        <div class="lead">
+          本测试版用 MusicXML 生成曲目画像，再用学生音频与乐谱指纹进行粗略匹配与测评。
+          它的目标是验证：新增曲目能不能从“录标准样板、做测试集、人工调参”变成“导入乐谱、自动生成配置”。
+        </div>
+      </div>
+      <div class="hero-side panel">
+        <div>
+          <div class="status"><span class="dot"></span><span>网页已就绪</span></div>
+          <div class="version">版本：v0.1.0-score-driven-prototype</div>
+        </div>
+        <div class="flow">
+          <div>1. 导入 MusicXML</div>
+          <div>2. 自动生成曲目画像</div>
+          <div>3. 上传学生演奏</div>
+          <div>4. 曲目匹配后再评分</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="manage">曲目管理</button>
+      <button class="tab" data-tab="evaluate">演奏测评</button>
+      <button class="tab" data-tab="guide">使用说明</button>
+    </div>
+
+    <section id="manage" class="tabpage">
+      <div class="grid">
+        <div class="panel">
+          <h2>新增曲目</h2>
+          <p class="small">上传 MusicXML，系统会自动提取调性、节拍、音符数、音区、核心音、旋律轮廓，并生成一张轻量曲目卡。</p>
+          <div id="xmlDrop" class="drop">
+            <div class="icon">📄</div>
+            <strong>点击或拖拽 MusicXML 到这里</strong>
+            <div class="small">支持 .musicxml / .xml / .mxl（本原型重点支持未压缩 XML）</div>
+            <input id="xmlFile" type="file" accept=".musicxml,.xml,.mxl" />
+          </div>
+
+          <div class="row">
+            <div>
+              <label>曲目名称</label>
+              <input id="pieceName" placeholder="如：G大调小步舞曲 Anh.114" />
+            </div>
+            <div>
+              <label>作曲家</label>
+              <input id="composer" placeholder="如：巴赫 / 佩措尔德" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>曲目类型</label>
+              <select id="category">
+                <option value="auto">自动判断</option>
+                <option value="小步舞曲类">小步舞曲类</option>
+                <option value="练习曲类">练习曲类</option>
+                <option value="抒情小品类">抒情小品类</option>
+                <option value="复调类">复调类</option>
+                <option value="儿童小曲类">儿童小曲类</option>
+              </select>
+            </div>
+            <div>
+              <label>建议速度范围</label>
+              <input id="tempoRange" placeholder="如：60–120 bpm" />
+            </div>
+          </div>
+          <label>教学重点（可选，系统也会自动生成）</label>
+          <textarea id="focus" placeholder="每行一个教学重点，例如：三拍子强弱感"></textarea>
+          <div class="btns">
+            <button class="btn" id="savePiece">保存曲目卡</button>
+            <button class="btn secondary" id="loadSample">载入示例曲目</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>曲目画像预览</h2>
+          <div id="fingerprintEmpty" class="small">还没有导入乐谱。导入 MusicXML 后，这里会显示自动生成的曲目画像。</div>
+          <div id="fingerprint" class="hidden"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:18px;">
+        <h2>已保存曲目</h2>
+        <div id="pieceList" class="piece-list"></div>
+      </div>
+    </section>
+
+    <section id="evaluate" class="tabpage hidden">
+      <div class="grid">
+        <div class="panel">
+          <h2>上传学生演奏</h2>
+          <p class="small">先选择曲目，再上传学生演奏音频。系统会先做音频质量检测和曲目匹配，不匹配时不评分。</p>
+          <label>选择测评曲目</label>
+          <select id="evalPiece"></select>
+          <div id="audioDrop" class="drop" style="margin-top:14px;">
+            <div class="icon">🎧</div>
+            <strong>点击或拖拽学生演奏录音</strong>
+            <div class="small">支持浏览器可解码的 MP3 / WAV / M4A</div>
+            <input id="audioFile" type="file" accept="audio/*" />
+          </div>
+          <div class="btns">
+            <button class="btn" id="startEval">开始测评</button>
+            <button class="btn secondary" id="resetEval">清空结果</button>
+          </div>
+          <div id="steps" class="progress-list hidden"></div>
+        </div>
+
+        <div class="panel">
+          <h2>测评结果</h2>
+          <div id="evalEmpty" class="small">未开始测评。请先选择曲目并上传音频。</div>
+          <div id="evalResult" class="hidden"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="guide" class="tabpage hidden">
+      <div class="panel">
+        <h2>为什么这是更省力的新路线？</h2>
+        <div class="cards">
+          <div class="metric"><div class="k">过去做法</div><div class="v">标准音频</div><div class="note">每首曲子都要录样板、调规则、做测试集，工作量大。</div></div>
+          <div class="metric"><div class="k">新做法</div><div class="v">乐谱驱动</div><div class="note">上传 MusicXML，系统自动生成曲目画像和识别指纹。</div></div>
+          <div class="metric"><div class="k">AI分工</div><div class="v">生成反馈</div><div class="note">算法负责判断，AI负责表达，老师负责最终确认。</div></div>
+          <div class="metric"><div class="k">Tomplay闭环</div><div class="v">练评改练</div><div class="note">测评后自动给慢速、循环、节拍器、分手练习建议。</div></div>
+        </div>
+        <h3>正式版建议</h3>
+        <p class="small">本网页是快速验证原型。正式版应把音频分析放到后端，使用更稳定的音高识别、节奏对齐和 MusicXML/MIDI 对齐算法。大模型不要直接听音频打分，而是读取结构化分析结果后生成学生版与老师版反馈。</p>
+      </div>
+    </section>
+
+    <div class="footer">AI辅助测评仅供课堂参考，最终判断由老师完成。</div>
+  </div>
+
+<script>
+const NOTE_TO_PC = {C:0, D:2, E:4, F:5, G:7, A:9, B:11};
+const PC_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const KEY_BY_FIFTHS = {
+  '-7':'Cb大调 / Ab小调','-6':'Gb大调 / Eb小调','-5':'Db大调 / Bb小调','-4':'Ab大调 / F小调','-3':'Eb大调 / C小调','-2':'Bb大调 / G小调','-1':'F大调 / D小调','0':'C大调 / A小调','1':'G大调 / E小调','2':'D大调 / B小调','3':'A大调 / F#小调','4':'E大调 / C#小调','5':'B大调 / G#小调','6':'F#大调 / D#小调','7':'C#大调 / A#小调'
+};
+const SCALE_PCS_BY_FIFTHS = {
+  '-1':[5,7,9,10,0,2,4], '0':[0,2,4,5,7,9,11], '1':[7,9,11,0,2,4,6], '2':[2,4,6,7,9,11,1], '3':[9,11,1,2,4,6,8], '4':[4,6,8,9,11,1,3], '5':[11,1,3,4,6,8,10],
+  '-2':[10,0,2,3,5,7,9], '-3':[3,5,7,8,10,0,2], '-4':[8,10,0,1,3,5,7], '-5':[1,3,5,6,8,10,0], '-6':[6,8,10,11,1,3,5], '-7':[11,1,3,4,6,8,10]
+};
+let currentFingerprint = null;
+let currentXmlName = '';
+let selectedAudio = null;
+
+function qs(id){ return document.getElementById(id); }
+function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+function fmt(n, d=2){ return Number.isFinite(n) ? n.toFixed(d) : '—'; }
+function normHist(hist){ const s = hist.reduce((a,b)=>a+b,0)||1; return hist.map(x=>x/s); }
+function cosine(a,b){ let dot=0, aa=0, bb=0; for(let i=0;i<a.length;i++){dot+=a[i]*b[i]; aa+=a[i]*a[i]; bb+=b[i]*b[i];} return (aa&&bb)?dot/(Math.sqrt(aa)*Math.sqrt(bb)):0; }
+function topPitchClasses(hist, n=5){ return hist.map((v,i)=>({pc:i,v})).sort((a,b)=>b.v-a.v).slice(0,n); }
+function pcLabel(pc){ return PC_NAMES[((pc%12)+12)%12]; }
+function midiToPc(midi){ return ((Math.round(midi)%12)+12)%12; }
+function midiToName(midi){ const m=Math.round(midi); return `${pcLabel(m%12)}${Math.floor(m/12)-1}`; }
+function sign(x){ return x>0?1:x<0?-1:0; }
+
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  document.querySelectorAll('.tabpage').forEach(p=>p.classList.add('hidden'));
+  qs(name).classList.remove('hidden');
+  if(name==='evaluate') refreshEvalSelect();
+}
+document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>showTab(btn.dataset.tab));
+
+function bindDrop(dropId, inputId, cb){
+  const drop = qs(dropId), input = qs(inputId);
+  drop.onclick = () => input.click();
+  input.onchange = e => { if(e.target.files[0]) cb(e.target.files[0]); };
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault(); drop.classList.add('drag');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault(); drop.classList.remove('drag');}));
+  drop.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) cb(f); });
+}
+
+bindDrop('xmlDrop','xmlFile', handleXmlFile);
+bindDrop('audioDrop','audioFile', file => { selectedAudio = file; qs('audioDrop').querySelector('strong').textContent = `已选择：${file.name}`; });
+
+async function handleXmlFile(file){
+  currentXmlName = file.name;
+  const text = await file.text();
+  try {
+    currentFingerprint = parseMusicXML(text, file.name);
+    qs('pieceName').value = currentFingerprint.title || file.name.replace(/\.(musicxml|xml)$/i,'');
+    qs('composer').value = currentFingerprint.composer || '';
+    qs('tempoRange').value = currentFingerprint.tempo ? `${Math.round(currentFingerprint.tempo*0.65)}–${Math.round(currentFingerprint.tempo*1.1)} bpm` : '';
+    if(qs('category').value === 'auto') qs('category').value = currentFingerprint.category;
+    qs('focus').value = autoFocus(currentFingerprint).join('\n');
+    renderFingerprint(currentFingerprint);
+  } catch(err) {
+    alert('MusicXML 解析失败：' + err.message + '\n请优先使用未压缩的 .musicxml 或 .xml 文件。');
+    console.error(err);
+  }
+}
+
+function parseMusicXML(text, filename){
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  if(doc.querySelector('parsererror')) throw new Error('XML格式不正确');
+  const score = doc.querySelector('score-partwise, score-timewise');
+  if(!score) throw new Error('未识别到 score-partwise 或 score-timewise');
+  const title = doc.querySelector('work-title')?.textContent?.trim() || doc.querySelector('movement-title')?.textContent?.trim() || '';
+  const composer = Array.from(doc.querySelectorAll('creator')).find(x=>/composer/i.test(x.getAttribute('type')||''))?.textContent?.trim() || '';
+  const part = doc.querySelector('part');
+  if(!part) throw new Error('未找到 part');
+  const measures = Array.from(part.querySelectorAll(':scope > measure'));
+  let fifths = null, beats = null, beatType = null, divisions = 1, tempo = null;
+  let events = [];
+  let pitchHist = Array(12).fill(0);
+  let durationHist = {};
+  measures.forEach((measure, mi)=>{
+    const attr = measure.querySelector('attributes');
+    if(attr){
+      const div = attr.querySelector('divisions')?.textContent; if(div) divisions = parseFloat(div) || divisions;
+      const fi = attr.querySelector('key > fifths')?.textContent; if(fi !== undefined && fi !== null && fi !== '') fifths = parseInt(fi,10);
+      const b = attr.querySelector('time > beats')?.textContent; if(b) beats = b.trim();
+      const bt = attr.querySelector('time > beat-type')?.textContent; if(bt) beatType = bt.trim();
+    }
+    const soundTempo = measure.querySelector('sound[tempo]')?.getAttribute('tempo');
+    if(soundTempo) tempo = parseFloat(soundTempo);
+    const metro = measure.querySelector('metronome > per-minute')?.textContent;
+    if(metro) tempo = parseFloat(metro);
+    const notes = Array.from(measure.querySelectorAll(':scope > note'));
+    notes.forEach(note=>{
+      const isRest = !!note.querySelector('rest');
+      const dur = parseFloat(note.querySelector('duration')?.textContent || '0') / (divisions || 1);
+      const isChord = !!note.querySelector('chord');
+      if(isRest) {
+        if(!isChord) events.push({measure: mi+1, pitches: [], duration: dur, rest: true});
+        return;
+      }
+      const p = note.querySelector('pitch');
+      if(!p) return;
+      const step = p.querySelector('step')?.textContent?.trim();
+      const alter = parseInt(p.querySelector('alter')?.textContent || '0',10);
+      const octave = parseInt(p.querySelector('octave')?.textContent || '4',10);
+      const pc = ((NOTE_TO_PC[step] + alter)%12+12)%12;
+      const midi = (octave + 1) * 12 + pc;
+      pitchHist[pc] += Math.max(dur, .25);
+      durationHist[dur.toFixed(2)] = (durationHist[dur.toFixed(2)]||0)+1;
+      if(isChord && events.length){
+        events[events.length-1].pitches.push(midi);
+      } else {
+        events.push({measure: mi+1, pitches:[midi], duration:dur, rest:false});
+      }
+    });
+  });
+  const melodic = events.filter(e=>e.pitches.length).map(e=>Math.max(...e.pitches));
+  const contour = [];
+  for(let i=1;i<melodic.length;i++) contour.push(sign(melodic[i]-melodic[i-1]));
+  const normPc = normHist(pitchHist);
+  const top = topPitchClasses(pitchHist, 5).map(x=>x.pc);
+  const range = melodic.length ? [Math.min(...melodic), Math.max(...melodic)] : [null,null];
+  const meter = beats && beatType ? `${beats}/${beatType}` : '未知';
+  const category = inferCategory({title, filename, meter, notes: melodic.length});
+  return {
+    id: 'piece_' + Date.now(),
+    title, composer, filename,
+    measures: measures.length,
+    noteCount: melodic.length,
+    fifths: Number.isInteger(fifths)?fifths:0,
+    keyName: KEY_BY_FIFTHS[String(Number.isInteger(fifths)?fifths:0)] || '未知',
+    scalePcs: SCALE_PCS_BY_FIFTHS[String(Number.isInteger(fifths)?fifths:0)] || SCALE_PCS_BY_FIFTHS['0'],
+    meter, tempo,
+    category,
+    pitchHist, normPc, topPcs: top,
+    range, contour,
+    events: events.slice(0, 600),
+    durationHist
+  };
+}
+
+function inferCategory({title, filename, meter, notes}){
+  const s = `${title} ${filename}`.toLowerCase();
+  if(/minuet|menuet|小步|waltz|圆舞/.test(s) || meter === '3/4') return '小步舞曲类';
+  if(/beyer|拜厄|czerny|车尔尼|etude|练习曲/.test(s)) return '练习曲类';
+  if(/bach|巴赫|invention|prelude|赋格|复调/.test(s)) return '复调类';
+  if(/burgmuller|布格缪勒|song|lyric|抒情/.test(s)) return '抒情小品类';
+  return '儿童小曲类';
+}
+
+function autoFocus(fp){
+  const base = [];
+  if(fp.category === '小步舞曲类') base.push('保持三拍子强—弱—弱的舞曲感','右手旋律清楚，左手伴奏轻柔','注意乐句连接自然，不要中断');
+  else if(fp.category === '练习曲类') base.push('节奏均匀稳定','手指触键清楚，音与音之间保持连贯','保持速度稳定，不要忽快忽慢');
+  else if(fp.category === '复调类') base.push('保持声部线条清楚','左右手相互独立但节奏统一','注意每个声部的进入与结束');
+  else if(fp.category === '抒情小品类') base.push('旋律要有歌唱性','注意强弱变化与乐句呼吸','伴奏不要盖住旋律');
+  else base.push('完整流畅地弹完整段','节奏和音高准确','注意基本力度和音乐表情');
+  if(fp.meter === '3/4' && !base.some(x=>x.includes('三拍子'))) base.unshift('注意三拍子强—弱—弱');
+  return base.slice(0,4);
+}
+
+function renderFingerprint(fp){
+  qs('fingerprintEmpty').classList.add('hidden');
+  qs('fingerprint').classList.remove('hidden');
+  const top = fp.topPcs.map(pc=>`<span class="badge">${pcLabel(pc)}</span>`).join('');
+  const scale = fp.scalePcs.map(pc=>`<span class="badge green">${pcLabel(pc)}</span>`).join('');
+  qs('fingerprint').innerHTML = `
+    <div class="cards">
+      <div class="metric"><div class="k">调性</div><div class="v">${fp.keyName}</div><div class="note">由 MusicXML 的 key/fifths 读取</div></div>
+      <div class="metric"><div class="k">节拍</div><div class="v">${fp.meter}</div><div class="note">由 MusicXML 的 time 读取</div></div>
+      <div class="metric"><div class="k">音符数</div><div class="v">${fp.noteCount}</div><div class="note">用于生成旋律和节奏指纹</div></div>
+      <div class="metric"><div class="k">音区</div><div class="v">${fp.range[0] ? midiToName(fp.range[0]) + '–' + midiToName(fp.range[1]) : '—'}</div><div class="note">自动统计最低音与最高音</div></div>
+    </div>
+    <h3>音阶与核心音</h3>
+    <div class="small">音阶：${scale}</div>
+    <div class="small" style="margin-top:6px;">核心音：${top}</div>
+    <h3>自动教学重点</h3>
+    <div>${autoFocus(fp).map(x=>`<span class="badge orange">${x}</span>`).join('')}</div>
+  `;
+}
+
+function getPieces(){ return JSON.parse(localStorage.getItem('qinyue_pieces_v01') || '[]'); }
+function setPieces(pieces){ localStorage.setItem('qinyue_pieces_v01', JSON.stringify(pieces)); renderPieceList(); refreshEvalSelect(); }
+
+qs('savePiece').onclick = () => {
+  if(!currentFingerprint) { alert('请先导入 MusicXML。'); return; }
+  const fp = JSON.parse(JSON.stringify(currentFingerprint));
+  fp.id = 'piece_' + Date.now();
+  fp.title = qs('pieceName').value.trim() || fp.title || currentXmlName;
+  fp.composer = qs('composer').value.trim();
+  fp.category = qs('category').value === 'auto' ? fp.category : qs('category').value;
+  fp.tempoRange = qs('tempoRange').value.trim();
+  fp.focus = qs('focus').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  const pieces = getPieces();
+  pieces.unshift(fp);
+  setPieces(pieces);
+  alert('曲目卡已保存。');
+};
+
+qs('loadSample').onclick = () => {
+  const fp = makeSamplePiece();
+  currentFingerprint = fp;
+  qs('pieceName').value = fp.title;
+  qs('composer').value = fp.composer;
+  qs('category').value = fp.category;
+  qs('tempoRange').value = fp.tempoRange;
+  qs('focus').value = fp.focus.join('\n');
+  renderFingerprint(fp);
+};
+
+function makeSamplePiece(){
+  const seq = [67,69,71,72,74,76,74,72,71,69,67,69,71,67,71,74,72,71,69,67,69,71,72,74];
+  const hist = Array(12).fill(0); seq.forEach(m=>hist[m%12]++);
+  const contour = []; for(let i=1;i<seq.length;i++) contour.push(sign(seq[i]-seq[i-1]));
+  return {
+    id:'sample_anh114', title:'G大调小步舞曲 Anh.114（示例）', composer:'巴赫 / 佩措尔德', filename:'sample', measures:8, noteCount:seq.length,
+    fifths:1, keyName:'G大调 / E小调', scalePcs:SCALE_PCS_BY_FIFTHS['1'], meter:'3/4', tempo:100, tempoRange:'60–120 bpm', category:'小步舞曲类',
+    pitchHist:hist, normPc:normHist(hist), topPcs:topPitchClasses(hist,5).map(x=>x.pc), range:[Math.min(...seq),Math.max(...seq)], contour,
+    events: seq.map((m,i)=>({measure:Math.floor(i/3)+1,pitches:[m],duration:1,rest:false})), durationHist:{'1.00':seq.length},
+    focus:['三拍子强—弱—弱','右手旋律清楚','左手伴奏轻柔','乐句连接自然']
+  };
+}
+
+function renderPieceList(){
+  const pieces = getPieces();
+  if(!pieces.length){ qs('pieceList').innerHTML = '<div class="small">还没有保存曲目。可以先点击“载入示例曲目”，再保存。</div>'; return; }
+  qs('pieceList').innerHTML = pieces.map(p=>`
+    <div class="piece-item">
+      <div>
+        <div class="piece-title">${p.title}</div>
+        <div class="small">${p.composer || '未填写作曲家'} · ${p.keyName} · ${p.meter} · ${p.category}</div>
+      </div>
+      <button class="btn secondary" onclick="deletePiece('${p.id}')">删除</button>
+    </div>
+  `).join('');
+}
+window.deletePiece = id => setPieces(getPieces().filter(p=>p.id!==id));
+function refreshEvalSelect(){
+  const pieces = getPieces();
+  qs('evalPiece').innerHTML = pieces.length ? pieces.map(p=>`<option value="${p.id}">${p.title}</option>`).join('') : '<option value="">请先在曲目管理中保存曲目</option>';
+}
+
+function setSteps(items){
+  qs('steps').classList.remove('hidden');
+  qs('steps').innerHTML = items.map((it,i)=>`<div class="step"><span class="s">${it.icon||i+1}</span><span>${it.text}</span></div>`).join('');
+}
+function resetEval(){
+  selectedAudio = null;
+  qs('audioFile').value = '';
+  qs('audioDrop').querySelector('strong').textContent = '点击或拖拽学生演奏录音';
+  qs('steps').classList.add('hidden');
+  qs('evalEmpty').classList.remove('hidden');
+  qs('evalResult').classList.add('hidden');
+  qs('evalResult').innerHTML = '';
+}
+qs('resetEval').onclick = resetEval;
+
+qs('startEval').onclick = async () => {
+  const piece = getPieces().find(p=>p.id === qs('evalPiece').value);
+  if(!piece){ alert('请先保存并选择一首曲目。'); return; }
+  if(!selectedAudio){ alert('请先上传学生演奏音频。'); return; }
+  qs('evalEmpty').classList.add('hidden');
+  qs('evalResult').classList.remove('hidden');
+  qs('evalResult').innerHTML = '<div class="small">正在分析，请稍候……</div>';
+  try {
+    setSteps([{icon:'⏳',text:'正在加载音频'}]);
+    const audio = await decodeAudio(selectedAudio);
+    setSteps([{icon:'✅',text:'音频加载完成'},{icon:'⏳',text:'正在检测音频质量和有效演奏片段'}]);
+    const quality = analyzeAudioQuality(audio);
+    setSteps([{icon:'✅',text:'音频质量检测完成'},{icon:'⏳',text:'正在提取音高与旋律轮廓'}]);
+    const audioFp = extractAudioFingerprint(audio, quality);
+    setSteps([{icon:'✅',text:'音高特征提取完成'},{icon:'⏳',text:'正在与乐谱指纹比对'}]);
+    const match = compareToScore(piece, audioFp, quality);
+    if(match.status === 'mismatch' || match.status === 'unusable'){
+      setSteps([{icon:'✅',text:'音频加载完成'},{icon:'✅',text:'质量和有效片段检测完成'},{icon:'❌',text:'曲目匹配未通过，已停止评分'}]);
+      renderMismatch(piece, quality, audioFp, match);
+      return;
+    }
+    setSteps([{icon:'✅',text:'曲目匹配通过'},{icon:'⏳',text:'正在生成五维评分和教学建议'}]);
+    const scores = buildScores(piece, quality, audioFp, match);
+    setSteps([{icon:'✅',text:'音频加载完成'},{icon:'✅',text:'曲目匹配通过'},{icon:'✅',text:'五维评分完成'},{icon:'✅',text:'Tomplay练习建议生成完成'}]);
+    renderScores(piece, quality, audioFp, match, scores);
+  } catch(err) {
+    qs('evalResult').innerHTML = `<div class="result bad"><strong>分析失败</strong><p class="small">${err.message}</p></div>`;
+    console.error(err);
+  }
+};
+
+async function decodeAudio(file){
+  const arr = await file.arrayBuffer();
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const buf = await ctx.decodeAudioData(arr.slice(0));
+  const channels = [];
+  for(let c=0;c<buf.numberOfChannels;c++) channels.push(buf.getChannelData(c));
+  const len = buf.length;
+  const mono = new Float32Array(len);
+  for(let i=0;i<len;i++){
+    let s=0; channels.forEach(ch=>s+=ch[i]); mono[i]=s/channels.length;
+  }
+  return { sampleRate: buf.sampleRate, data: mono, duration: buf.duration };
+}
+
+function analyzeAudioQuality(audio){
+  const sr = audio.sampleRate, data = audio.data;
+  const frame = Math.floor(sr * 0.05);
+  const rms = [];
+  let clip = 0;
+  for(let i=0;i<data.length;i++) if(Math.abs(data[i])>0.985) clip++;
+  for(let pos=0; pos+frame<data.length; pos+=frame){
+    let sum=0; for(let i=pos;i<pos+frame;i++) sum += data[i]*data[i];
+    rms.push(Math.sqrt(sum/frame));
+  }
+  const max = Math.max(...rms, 0.0001);
+  const avg = rms.reduce((a,b)=>a+b,0)/(rms.length||1);
+  const threshold = Math.max(max*0.08, avg*0.45, 0.005);
+  const active = rms.map(x=>x>threshold);
+  let first = active.findIndex(Boolean), last = active.length-1-active.slice().reverse().findIndex(Boolean);
+  if(first<0){ first=0; last=0; }
+  let activeFrames = active.filter(Boolean).length;
+  let longGaps = 0, gap=0;
+  for(const a of active){
+    if(!a) gap++; else { if(gap*0.05>1.0) longGaps++; gap=0; }
+  }
+  if(gap*0.05>1.0) longGaps++;
+  const effectiveDuration = Math.max(0,(last-first+1)*0.05);
+  const clippingRatio = clip / data.length;
+  const qualityScore = clamp(100 - (audio.duration<8?30:0) - (effectiveDuration<6?35:0) - longGaps*7 - clippingRatio*500, 0, 100);
+  return { duration: audio.duration, effectiveDuration, firstSec:first*0.05, lastSec:last*0.05, longGaps, clippingRatio, qualityScore, threshold, rms, active };
+}
+
+function extractAudioFingerprint(audio, quality){
+  const sr = audio.sampleRate, data = audio.data;
+  const start = Math.floor(quality.firstSec * sr);
+  const end = Math.min(data.length, Math.floor((quality.lastSec + .2) * sr));
+  const win = Math.floor(sr * 0.09);
+  const hop = Math.floor(sr * 0.10);
+  const hist = Array(12).fill(0);
+  const pitchSeq = [];
+  for(let pos=start; pos+win<end; pos+=hop){
+    let sum=0; for(let i=pos;i<pos+win;i++) sum += data[i]*data[i];
+    const rms = Math.sqrt(sum/win);
+    if(rms < quality.threshold) continue;
+    const f0 = autoCorrelate(data.subarray(pos, pos+win), sr);
+    if(!f0 || f0 < 45 || f0 > 1600) continue;
+    const midi = 69 + 12 * Math.log2(f0 / 440);
+    const rounded = Math.round(midi);
+    hist[midiToPc(rounded)] += rms;
+    if(!pitchSeq.length || Math.abs(rounded - pitchSeq[pitchSeq.length-1]) > 1) pitchSeq.push(rounded);
+  }
+  const contour = [];
+  for(let i=1;i<pitchSeq.length;i++) contour.push(sign(pitchSeq[i]-pitchSeq[i-1]));
+  return { pitchHist: hist, normPc: normHist(hist), topPcs: topPitchClasses(hist,5).map(x=>x.pc), pitchSeq, contour, pitchFrames: hist.reduce((a,b)=>a+b,0) };
+}
+
+function autoCorrelate(buffer, sampleRate){
+  const SIZE = buffer.length;
+  let rms = 0;
+  for(let i=0;i<SIZE;i++) rms += buffer[i]*buffer[i];
+  rms = Math.sqrt(rms/SIZE);
+  if(rms < 0.01) return null;
+  let r1=0, r2=SIZE-1, thres=0.2;
+  for(let i=0;i<SIZE/2;i++) if(Math.abs(buffer[i])<thres){ r1=i; break; }
+  for(let i=1;i<SIZE/2;i++) if(Math.abs(buffer[SIZE-i])<thres){ r2=SIZE-i; break; }
+  buffer = buffer.slice(r1,r2);
+  const n = buffer.length;
+  const c = new Array(n).fill(0);
+  for(let i=0;i<n;i++) for(let j=0;j<n-i;j++) c[i] += buffer[j]*buffer[j+i];
+  let d=0; while(c[d] > c[d+1]) d++;
+  let maxval=-1, maxpos=-1;
+  for(let i=d;i<n;i++){ if(c[i]>maxval){ maxval=c[i]; maxpos=i; } }
+  if(maxpos <= 0) return null;
+  const x1=c[maxpos-1], x2=c[maxpos], x3=c[maxpos+1];
+  const a=(x1+x3-2*x2)/2;
+  const b=(x3-x1)/2;
+  if(a) maxpos = maxpos - b/(2*a);
+  return sampleRate / maxpos;
+}
+
+function contourSimilarity(a,b){
+  if(!a.length || !b.length) return 0;
+  const m = Math.min(a.length, b.length, 80);
+  const aa = a.slice(0,m), bb = resampleSigns(b, m);
+  let same=0;
+  for(let i=0;i<m;i++) if(aa[i]===bb[i]) same++;
+  return same/m;
+}
+function resampleSigns(seq, n){
+  if(seq.length===n) return seq.slice();
+  const out=[];
+  for(let i=0;i<n;i++) out.push(seq[Math.floor(i*seq.length/n)] || 0);
+  return out;
+}
+
+function compareToScore(piece, audioFp, quality){
+  if(quality.qualityScore < 35 || quality.effectiveDuration < 5 || !audioFp.pitchFrames){
+    return {status:'unusable', score:0, confidence:'不可用', reasons:['音频质量或有效演奏时长不足，暂不评分。']};
+  }
+  const scaleSet = new Set(piece.scalePcs || []);
+  const scaleCoverage = audioFp.normPc.reduce((sum,v,pc)=>sum + (scaleSet.has(pc)?v:0),0);
+  const pcCosine = cosine(piece.normPc || normHist(piece.pitchHist), audioFp.normPc);
+  const contourSim = contourSimilarity(piece.contour || [], audioFp.contour || []);
+  const estPieceDuration = Math.max(10, (piece.noteCount || 30) * 0.35);
+  const durationSim = clamp(1 - Math.abs(quality.effectiveDuration - estPieceDuration) / Math.max(estPieceDuration, quality.effectiveDuration, 1), 0, 1);
+  const matchScore = 0.35*pcCosine + 0.25*scaleCoverage + 0.25*contourSim + 0.15*durationSim;
+  const reasons = [];
+  if(scaleCoverage < .55) reasons.push('音频主要音高与乐谱调性不够一致');
+  if(pcCosine < .45) reasons.push('音高分布与乐谱差异较大');
+  if(contourSim < .38) reasons.push('旋律轮廓与乐谱差异较大');
+  if(quality.longGaps > 2) reasons.push('演奏中存在较多长停顿，影响判断');
+  let status='match', confidence='高';
+  if(matchScore >= .76) confidence='高';
+  else if(matchScore >= .62) confidence='中';
+  else if(matchScore >= .52) { confidence='低'; status='review'; reasons.push('曲目匹配可信度偏低，建议老师复核'); }
+  else status='mismatch';
+  if(scaleCoverage < .45 && pcCosine < .42) status='mismatch';
+  return {status, confidence, score:matchScore, scaleCoverage, pcCosine, contourSim, durationSim, reasons};
+}
+
+function buildScores(piece, quality, audioFp, match){
+  const rhythmBase = 18 + match.durationSim * 7 - quality.longGaps * 1.2;
+  const pitchBase = 10 + (match.pcCosine * .45 + match.scaleCoverage * .55) * 15;
+  const fluencyBase = 16 + Math.min(4, quality.effectiveDuration / 15) - quality.longGaps * 2.2;
+  const dynamicsBase = 16 - quality.clippingRatio * 100 - (quality.qualityScore < 70 ? 2 : 0);
+  const expressionBase = 6 + match.score * 4 - (match.confidence === '中' ? .8 : 0);
+  const cap = match.confidence === '中' ? 85 : 95;
+  const scores = {
+    rhythm: clamp(Math.round(rhythmBase), 8, 25),
+    pitch: clamp(Math.round(pitchBase), 8, 25),
+    fluency: clamp(Math.round(fluencyBase), 6, 20),
+    dynamics: clamp(Math.round(dynamicsBase), 8, 20),
+    expression: clamp(Math.round(expressionBase), 3, 10)
+  };
+  let total = scores.rhythm + scores.pitch + scores.fluency + scores.dynamics + scores.expression;
+  total = Math.min(total, cap);
+  const deductions = [];
+  if(match.scaleCoverage < .75) deductions.push('调性覆盖率不高，可能存在错音或录音干扰');
+  if(match.contourSim < .55) deductions.push('旋律轮廓匹配度一般，建议老师复核是否有漏音或错音');
+  if(quality.longGaps) deductions.push(`检测到 ${quality.longGaps} 处较长停顿，影响流畅度`);
+  if(quality.qualityScore < 70) deductions.push('音频质量一般，部分维度评分已保守处理');
+  return { ...scores, total, cap, deductions };
+}
+
+function renderMismatch(piece, quality, audioFp, match){
+  qs('evalResult').className = '';
+  qs('evalResult').innerHTML = `
+    <div class="result bad">
+      <h3>曲目未通过检测，暂不评分</h3>
+      <p class="small">所选曲目：<strong>${piece.title}</strong></p>
+      <div class="cards">
+        <div class="metric"><div class="k">匹配度</div><div class="v">${fmt(match.score*100,0)}%</div><div class="note">低于评分门槛</div></div>
+        <div class="metric"><div class="k">有效演奏</div><div class="v">${fmt(quality.effectiveDuration,1)}秒</div><div class="note">总时长 ${fmt(quality.duration,1)} 秒</div></div>
+        <div class="metric"><div class="k">音频质量</div><div class="v">${fmt(quality.qualityScore,0)}</div><div class="note">低于35将直接不评分</div></div>
+      </div>
+      <h3>原因</h3>
+      <ul class="small">${match.reasons.map(r=>`<li>${r}</li>`).join('') || '<li>与乐谱指纹差异较大。</li>'}</ul>
+      <p class="small">请确认选择的曲目正确，并重新上传该曲目的清晰演奏录音。AI辅助测评不对不匹配曲目给分。</p>
+    </div>`;
+}
+
+function renderScores(piece, quality, audioFp, match, scores){
+  const confidenceClass = match.confidence === '高' ? 'green' : 'orange';
+  const scoreCards = [
+    ['节奏稳定', scores.rhythm, 25], ['音高准确', scores.pitch, 25], ['完整流畅', scores.fluency, 20], ['力度层次', scores.dynamics, 20], ['音乐表现', scores.expression, 10]
+  ].map(([k,v,max])=>`<div class="metric"><div class="k">${k}</div><div class="v">${v}/${max}</div><div class="scorebar"><span style="width:${v/max*100}%"></span></div></div>`).join('');
+  const student = makeStudentFeedback(piece, scores, match);
+  const teacher = makeTeacherFeedback(piece, scores, quality, match);
+  const tomplay = makeTomplay(piece, scores, match);
+  qs('evalResult').innerHTML = `
+    <div class="result ok">
+      <h3>曲目匹配通过，已生成测评</h3>
+      <span class="badge ${confidenceClass}">匹配可信度：${match.confidence}</span>
+      <span class="badge">匹配度：${fmt(match.score*100,0)}%</span>
+      <span class="badge">音频质量：${fmt(quality.qualityScore,0)}</span>
+      <div class="cards" style="margin-top:14px;">
+        <div class="metric"><div class="k">综合得分</div><div class="v">${scores.total}</div><div class="note">${match.confidence==='中'?'中可信度已限制最高分':'AI辅助评分，仅供参考'}</div></div>
+        <div class="metric"><div class="k">有效演奏</div><div class="v">${fmt(quality.effectiveDuration,1)}秒</div><div class="note">已忽略前后静音和噪音片段</div></div>
+        <div class="metric"><div class="k">乐谱调性覆盖</div><div class="v">${fmt(match.scaleCoverage*100,0)}%</div><div class="note">音频音高落入乐谱调式的比例</div></div>
+      </div>
+      <h3>五维评分</h3>
+      <div class="cards">${scoreCards}</div>
+      <h3>主要扣分/复核点</h3>
+      <ul class="small">${scores.deductions.map(x=>`<li>${x}</li>`).join('') || '<li>未发现明显需要扣分的高风险项。</li>'}</ul>
+      <h3>学生版反馈</h3>
+      <p class="small">${student}</p>
+      <h3>老师版反馈</h3>
+      <p class="small">${teacher}</p>
+      <h3>Tomplay练习建议</h3>
+      <ul class="small">${tomplay.map(x=>`<li>${x}</li>`).join('')}</ul>
+    </div>`;
+}
+
+function makeStudentFeedback(piece, scores, match){
+  if(scores.total >= 88) return `你已经把《${piece.title}》弹得比较完整了，很棒！下一步可以让旋律更自然，声音更有方向感。`;
+  if(scores.pitch < 18) return `你已经能弹出这首曲子的大概样子了。下一步我们先把音弹准，再慢慢加快速度。`;
+  if(scores.fluency < 14) return `这次有些地方停了一下。没关系，我们先把小片段练顺，再把它们连起来。`;
+  return `这次演奏已经有不错的基础。下一步要让节奏更稳、旋律更清楚，像在唱歌一样弹出来。`;
+}
+function makeTeacherFeedback(piece, scores, quality, match){
+  const focus = piece.focus?.length ? piece.focus.join('、') : autoFocus(piece).join('、');
+  return `本次系统判断曲目匹配可信度为${match.confidence}，有效演奏时长约${fmt(quality.effectiveDuration,1)}秒。建议教师重点复核：${focus}。若学生演奏质量较弱，应先确认其确实在弹目标曲，再根据节奏、音准和流畅度进行分段指导。`;
+}
+function makeTomplay(piece, scores, match){
+  const arr = [];
+  const tempo = piece.tempoRange || '慢速';
+  if(piece.category === '小步舞曲类') arr.push('打开节拍器，先用慢速练习三拍子“强—弱—弱”的舞曲感。');
+  else arr.push('先把速度调慢，保持每个音的时值稳定，再逐步提速。');
+  if(scores.pitch < 20) arr.push('先进行右手或旋律声部单独练习，对照乐谱逐音检查。');
+  if(scores.fluency < 16) arr.push('使用 Loop 片段循环功能，每次只练2–4小节，连续3遍稳定后再连接下一段。');
+  if(scores.dynamics < 17) arr.push('合手时注意伴奏不要盖住旋律，先听旋律声部，再轻声加入伴奏。');
+  arr.push(`建议速度范围：${tempo}。先慢速稳定，再逐步接近目标速度。`);
+  return arr;
+}
+
+renderPieceList();
+refreshEvalSelect();
+</script>
+</body>
+</html>
